@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String?
+  passwordHash String
+  role         String     @default("USER")
+  createdAt    DateTime   @default(now())
+  questions    Question[]
+  votes        Vote[]
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String
+  questions   Question[]
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  gameId      String
+  game        Game      @relation(fields: [gameId], references: [id])
+  prompt      String
+  status      String    @default("PENDING")
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  reviewedAt  DateTime?
+  options     Option[]
+  votes       Vote[]
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  text       String
+  sortOrder  Int
+  votes      Vote[]
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId    String
+  option      Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  anonymousId String?
+  createdAt   DateTime @default(now())
+
+  @@unique([questionId, userId])
+  @@unique([questionId, anonymousId])
+}
