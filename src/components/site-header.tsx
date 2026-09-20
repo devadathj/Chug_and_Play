@@ -22,6 +22,9 @@ export async function SiteHeader() {
           </Link>
           {session ? (
             <>
+              <span className="text-[var(--muted)]">
+                Hello, {session.user.name}
+              </span>
               <Link className="hover:text-[var(--gold)]" href="/submit">
                 Submit
               </Link>
